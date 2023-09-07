@@ -1,0 +1,147 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1/gaas/queuemanager
+
+spring:
+  profiles:
+    default: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create
+  cloud:
+    stream:
+      default-binder: rabbit
+      output-bindings:
+        - fulfillment_output
+        - bringg_output
+        - vol_output
+        - egain_output
+        - mailgun_output
+        - edw_dea_output
+        - pi_middleware_output
+        - wd_integration_output
+        - gaas_db_output
+        - gaas_external_dead_letter_queue
+      function:
+        bindings:
+          processMessageEvent-in-0: gaas_external_input
+      bindings:
+        gaas_external_input:
+          destination: gaas-external-order
+          group: queue-manager-dispacher
+          content-type: "application/xml"
+          consumer:
+            maxAttempts: 3
+            backOffInitialInterval: 500
+            backOffMaxInterval: 2000
+            backOffMultiplier: 2.0
+        fulfillment_output:
+          destination: gaas-fulfillment-order
+          group: fulfillment-group
+          content-type: "application/xml"
+        bringg_output:
+          destination: gaas-bringg-order
+          group: bringg-group
+          content-type: "application/xml"
+        vol_output:
+          destination: gaas-vol-order
+          group: vol-group
+          content-type: "application/xml"
+        egain_output:
+          destination: gaas-egain-order
+          group: egain-group
+          content-type: "application/xml"
+        mailgun_output:
+          destination: gaas-mailgun-order
+          group: mailgun-group
+          content-type: "application/xml"
+        edw_dea_output:
+          destination: gaas-edw-dea-order
+          group: edw-dea-group
+          content-type: "application/xml"
+        pi_middleware_output:
+          destination: gaas-pi-middleware-order
+          group: pi-middleware-group
+          content-type: "application/xml"
+        wd_integration_output:
+          destination: gaas-wd-integration-order
+          group: wd-integration-group
+          content-type: "application/xml"
+        gaas_db_output:
+          destination: gaas-gaas-db-order
+          group: gaas-db-group
+          content-type: "application/xml"
+        gaas_external_dead_letter_queue:
+          destination: gaas-external-order
+          producer:
+            partitionKeyExpression: "dlq"
+          contentType: "application/xml"
+      rabbit:
+        bindings:
+          gaas_external_input:
+            consumer:
+              auto-bind-dlq: true
+          fulfillment_output:
+            producer:
+              auto-bind-dlq: true
+          bringg_output:
+            producer:
+              auto-bind-dlq: true
+          vol_output:
+            producer:
+              auto-bind-dlq: true
+          egain_output:
+            producer:
+              auto-bind-dlq: true
+          mailgun_output:
+            producer:
+              auto-bind-dlq: true
+          edw_dea_output:
+            producer:
+              auto-bind-dlq: true
+          pi_middleware_output:
+            producer:
+              auto-bind-dlq: true
+          wd_integration_output:
+            producer:
+              auto-bind-dlq: true
+          gaas_db_output:
+            producer:
+              auto-bind-dlq: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: gaas_admin
+    password: rabbitmqadminPWD
+
+message-event:
+  back-off-time: 500
+  max-retry: 3
+  dead-letter-queue: "gaas_external_dead_letter_queue"
+  event-name-queue-map:
+    FULLFILMENT:
+      "fulfillment_output"
+    BRINGG:
+      "bringg_output"
+    VOL:
+      "vol_output"
+    EGAIN:
+      "egain_output"
+    MAILGUN:
+      "mailgun_output"
+    EDW_DEA:
+      "edw-dea_output"
+    PI_MIDDLEWARE:
+      "pi-middleware_output"
+    WD_INTEGRATION:
+      "wd-integration_output"
+    GAAS_DB:
+      "gaas-db_output"

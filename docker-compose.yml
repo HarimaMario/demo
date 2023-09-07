@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  #Local PostgreSQL
+  postgre-db:
+    container_name: postgredb
+    image: postgres:15.2-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gaas
+    ports:
+      - '5432:5432'
+    volumes: 
+      - /var/docker/data/postgres:/var/lib/postgresql/data
+
+
+  rabbitmq:
+    container_name: rabbitmqserver
+    image: rabbitmq:3.12.2-management
+    restart: always
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - /var/docker/data/rabbitmq/:/var/lib/rabbitmq/
+        - /var/docker/logs/rabbitmq:/var/log/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: gaas_admin
+      RABBITMQ_DEFAULT_PASS: rabbitmqadminPWD
