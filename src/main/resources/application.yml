@@ -15,7 +15,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
   cloud:
     stream:
       default-binder: rabbit
@@ -37,85 +37,84 @@ spring:
         gaas_external_input:
           destination: gaas-external-order
           group: queue-manager-dispacher
-          content-type: "application/xml"
+          content-type: "text/plain"
           consumer:
-            maxAttempts: 3
-            backOffInitialInterval: 500
-            backOffMaxInterval: 2000
-            backOffMultiplier: 2.0
+            maxAttempts: 1
         fulfillment_output:
           destination: gaas-fulfillment-order
           group: fulfillment-group
-          content-type: "application/xml"
+          content-type: "text/plain"
         bringg_output:
           destination: gaas-bringg-order
           group: bringg-group
-          content-type: "application/xml"
+          content-type: "text/plain"
         vol_output:
           destination: gaas-vol-order
           group: vol-group
-          content-type: "application/xml"
+          content-type: "text/plain"
         egain_output:
           destination: gaas-egain-order
           group: egain-group
-          content-type: "application/xml"
+          content-type: "text/plain"
         mailgun_output:
           destination: gaas-mailgun-order
           group: mailgun-group
-          content-type: "application/xml"
+          content-type: "text/plain"
         edw_dea_output:
           destination: gaas-edw-dea-order
           group: edw-dea-group
-          content-type: "application/xml"
+          content-type: "text/plain"
         pi_middleware_output:
           destination: gaas-pi-middleware-order
           group: pi-middleware-group
-          content-type: "application/xml"
+          content-type: "text/plain"
         wd_integration_output:
           destination: gaas-wd-integration-order
           group: wd-integration-group
-          content-type: "application/xml"
+          content-type: "text/plain"
         gaas_db_output:
           destination: gaas-gaas-db-order
           group: gaas-db-group
-          content-type: "application/xml"
-        gaas_external_dead_letter_queue:
-          destination: gaas-external-order
-          producer:
-            partitionKeyExpression: "dlq"
-          contentType: "application/xml"
+          content-type: "text/plain"
+        dead-letter-queue:
+          destination: gaas-external-order-dlq
+          group: gaas-external-group
+          contentType: "text/plain"
       rabbit:
         bindings:
           gaas_external_input:
             consumer:
-              auto-bind-dlq: true
+              auto-bind-dlq: false
           fulfillment_output:
             producer:
-              auto-bind-dlq: true
+              auto-bind-dlq: false
           bringg_output:
             producer:
-              auto-bind-dlq: true
+              auto-bind-dlq: false
           vol_output:
             producer:
-              auto-bind-dlq: true
+              auto-bind-dlq: false
           egain_output:
             producer:
-              auto-bind-dlq: true
+              auto-bind-dlq: false
           mailgun_output:
             producer:
-              auto-bind-dlq: true
+              auto-bind-dlq: false
           edw_dea_output:
             producer:
-              auto-bind-dlq: true
+              auto-bind-dlq: false
           pi_middleware_output:
             producer:
-              auto-bind-dlq: true
+              auto-bind-dlq: false
           wd_integration_output:
             producer:
-              auto-bind-dlq: true
+              auto-bind-dlq: false
           gaas_db_output:
             producer:
-              auto-bind-dlq: true
+              auto-bind-dlq: false
+          dead-letter-queue:
+            consumer:
+              auto-bind-dlq: false
   rabbitmq:
     host: localhost
     port: 5672
@@ -125,7 +124,7 @@ spring:
 message-event:
   back-off-time: 500
   max-retry: 3
-  dead-letter-queue: "gaas_external_dead_letter_queue"
+  dead-letter-queue: "gaas-external-order-dlq"
   event-name-queue-map:
     FULLFILMENT:
       "fulfillment_output"
